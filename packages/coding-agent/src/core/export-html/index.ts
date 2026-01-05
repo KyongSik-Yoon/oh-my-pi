@@ -144,7 +144,7 @@ export async function exportFromFile(inputPath: string, options?: ExportOptions 
 
 	if (!existsSync(inputPath)) throw new Error(`File not found: ${inputPath}`);
 
-	const sm = SessionManager.open(inputPath);
+	const sm = await SessionManager.open(inputPath);
 	const sessionData: SessionData = {
 		header: sm.getHeader(),
 		entries: sm.getEntries(),

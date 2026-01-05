@@ -20,7 +20,7 @@ console.log("New session file:", newSession.sessionFile);
 
 // Continue most recent session (or create new if none)
 const { session: continued, modelFallbackMessage } = await createAgentSession({
-	sessionManager: SessionManager.continueRecent(process.cwd()),
+	sessionManager: await SessionManager.continueRecent(process.cwd()),
 });
 if (modelFallbackMessage) console.log("Note:", modelFallbackMessage);
 console.log("Continued session:", continued.sessionFile);
@@ -34,7 +34,7 @@ for (const info of sessions.slice(0, 3)) {
 
 if (sessions.length > 0) {
 	const { session: opened } = await createAgentSession({
-		sessionManager: SessionManager.open(sessions[0].path),
+		sessionManager: await SessionManager.open(sessions[0].path),
 	});
 	console.log(`\nOpened: ${opened.sessionId}`);
 }

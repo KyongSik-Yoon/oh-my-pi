@@ -176,15 +176,15 @@ function getChangelogForDisplay(parsed: Args, settingsManager: SettingsManager):
 	return undefined;
 }
 
-function createSessionManager(parsed: Args, cwd: string): SessionManager | undefined {
+async function createSessionManager(parsed: Args, cwd: string): Promise<SessionManager | undefined> {
 	if (parsed.noSession) {
 		return SessionManager.inMemory();
 	}
 	if (parsed.session) {
-		return SessionManager.open(parsed.session, parsed.sessionDir);
+		return await SessionManager.open(parsed.session, parsed.sessionDir);
 	}
 	if (parsed.continue) {
-		return SessionManager.continueRecent(cwd, parsed.sessionDir);
+		return await SessionManager.continueRecent(cwd, parsed.sessionDir);
 	}
 	// --resume is handled separately (needs picker UI)
 	// If --session-dir provided without --continue/--resume, create new session there
@@ -400,7 +400,7 @@ export async function main(args: string[]) {
 	}
 
 	// Create session manager based on CLI flags
-	let sessionManager = createSessionManager(parsed, cwd);
+	let sessionManager = await createSessionManager(parsed, cwd);
 	time("createSessionManager");
 
 	// Handle --resume: show session picker
@@ -417,7 +417,7 @@ export async function main(args: string[]) {
 			console.log(chalk.dim("No session selected"));
 			return;
 		}
-		sessionManager = SessionManager.open(selectedPath);
+		sessionManager = await SessionManager.open(selectedPath);
 	}
 
 	const sessionOptions = await buildSessionOptions(parsed, scopedModels, sessionManager, modelRegistry);
