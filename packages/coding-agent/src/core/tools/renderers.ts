@@ -179,11 +179,17 @@ const grepRenderer: ToolRenderer<GrepArgs, GrepToolDetails> = {
 				const entry = fileEntries[i];
 				const isLast = i === maxFiles - 1 && (expanded || fileEntries.length <= 8);
 				const branch = isLast ? theme.tree.last : theme.tree.branch;
+				const isDir = entry.path.endsWith("/");
+				const entryPath = isDir ? entry.path.slice(0, -1) : entry.path;
+				const lang = isDir ? undefined : getLanguageFromPath(entryPath);
+				const entryIcon = isDir
+					? theme.fg("accent", theme.icon.folder)
+					: theme.fg("muted", theme.getLangIcon(lang));
 				const countLabel =
 					entry.count !== undefined
 						? ` ${theme.fg("dim", `(${entry.count} match${entry.count !== 1 ? "es" : ""})`)}`
 						: "";
-				text += `\n ${theme.fg("dim", branch)} ${theme.fg("accent", entry.path)}${countLabel}`;
+				text += `\n ${theme.fg("dim", branch)} ${entryIcon} ${theme.fg("accent", entry.path)}${countLabel}`;
 			}
 
 			if (!expanded && fileEntries.length > 8) {
@@ -321,7 +327,14 @@ const findRenderer: ToolRenderer<FindArgs, FindToolDetails> = {
 			for (let i = 0; i < maxFiles; i++) {
 				const isLast = i === maxFiles - 1 && (expanded || files.length <= 8);
 				const branch = isLast ? theme.tree.last : theme.tree.branch;
-				text += `\n ${theme.fg("dim", branch)} ${theme.fg("accent", files[i])}`;
+				const entry = files[i];
+				const isDir = entry.endsWith("/");
+				const entryPath = isDir ? entry.slice(0, -1) : entry;
+				const lang = isDir ? undefined : getLanguageFromPath(entryPath);
+				const entryIcon = isDir
+					? theme.fg("accent", theme.icon.folder)
+					: theme.fg("muted", theme.getLangIcon(lang));
+				text += `\n ${theme.fg("dim", branch)} ${entryIcon} ${theme.fg("accent", entry)}`;
 			}
 
 			if (!expanded && files.length > 8) {
