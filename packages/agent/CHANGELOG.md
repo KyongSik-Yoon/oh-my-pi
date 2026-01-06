@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [3.20.0] - 2026-01-06
 ### Breaking Changes
 
 - Replaced `queueMessage`/`queueMode` with steering + follow-up queues: use `steer`, `setSteeringMode`, and `getSteeringMode` for mid-run interruptions, and `followUp`, `setFollowUpMode`, and `getFollowUpMode` for post-turn messages

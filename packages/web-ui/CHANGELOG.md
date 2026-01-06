@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [3.20.0] - 2026-01-06
 ### Added
 
 - Added voice input and output support using OpenAI Whisper for transcription and TTS for speech synthesis

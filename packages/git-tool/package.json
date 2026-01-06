@@ -1,6 +1,6 @@
 {
 	"name": "@oh-my-pi/pi-git-tool",
-	"version": "3.15.1",
+	"version": "3.20.0",
 	"description": "Structured Git tool with safety guards and typed output",
 	"type": "module",
 	"main": "./src/index.ts",
@@ -29,7 +29,7 @@
 		"tool",
 		"agent"
 	],
-	"author": "Mario Zechner",
+	"author": "Can Bölük",
 	"license": "MIT",
 	"repository": {
 		"type": "git",

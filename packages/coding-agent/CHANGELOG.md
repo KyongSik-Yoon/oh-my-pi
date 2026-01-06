@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [3.20.0] - 2026-01-06
 ### Added
 
 - Added extensions API with auto-discovery (`.omp/extensions`) and `--extension`/`-e` loading for custom tools, commands, and lifecycle hooks

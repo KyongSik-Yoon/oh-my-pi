@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [3.20.0] - 2026-01-06
 ### Added
 
 - Added `isCapsLock` helper function for detecting Caps Lock key press via Kitty protocol

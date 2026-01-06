@@ -31,7 +31,7 @@ export class VoiceCapture {
 	private recorder?: MediaRecorder;
 	private audioContext?: AudioContext;
 	private analyser?: AnalyserNode;
-	private data?: Float32Array;
+	private data?: Float32Array<ArrayBuffer>;
 	private chunks: Blob[] = [];
 	private startedAt = 0;
 	private speechDetectedAt?: number;

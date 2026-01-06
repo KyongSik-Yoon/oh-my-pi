@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [3.20.0] - 2026-01-06
 ### Added
 
 - Added support for kwaipilot/kat-coder-pro model via OpenRouter
