@@ -474,6 +474,18 @@ function wrapSingleLine(line: string, width: number): string[] {
 		const isWhitespace = token.trim() === "";
 
 		// Token itself is too long - break it character by character
+		// For whitespace tokens exceeding width, truncate to width instead of breaking
+		if (tokenVisibleLength > width && isWhitespace) {
+			// Truncate long whitespace to fit width
+			const truncated = token.substring(0, width - currentVisibleLength);
+			if (truncated) {
+				currentLine += truncated;
+				currentVisibleLength += visibleWidth(truncated);
+			}
+			updateTrackerFromText(token, tracker);
+			continue;
+		}
+
 		if (tokenVisibleLength > width && !isWhitespace) {
 			if (currentLine) {
 				// Add specific reset for underline only (preserves background)

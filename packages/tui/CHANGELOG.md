@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed text wrapping allowing long whitespace tokens to exceed line width
+
 ## [3.31.0] - 2026-01-08
 
 ## [3.30.0] - 2026-01-07
