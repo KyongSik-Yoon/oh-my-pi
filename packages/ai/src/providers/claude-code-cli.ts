@@ -116,7 +116,12 @@ interface CcCliResultEvent {
 	num_turns?: number;
 }
 
-type CcCliEvent = CcCliSystemEvent | CcCliAssistantEvent | CcCliToolResultEvent | CcCliResultEvent | Record<string, unknown>;
+type CcCliEvent =
+	| CcCliSystemEvent
+	| CcCliAssistantEvent
+	| CcCliToolResultEvent
+	| CcCliResultEvent
+	| Record<string, unknown>;
 
 // ---------------------------------------------------------------------------
 // Async primitives
@@ -141,7 +146,7 @@ class AsyncChannel<T> {
 	async receive(): Promise<T | null> {
 		if (this.#buffer.length > 0) return this.#buffer.shift()!;
 		if (this.#closed) return null;
-		return new Promise<T | null>((resolve) => this.#waiters.push(resolve));
+		return new Promise<T | null>(resolve => this.#waiters.push(resolve));
 	}
 
 	close(): void {
@@ -176,7 +181,7 @@ class ToolResultStore {
 		if (this.#closed) {
 			return { content: "Claude Code CLI session closed", isError: true };
 		}
-		return new Promise<CcCliResolvedToolResult>((resolve) => {
+		return new Promise<CcCliResolvedToolResult>(resolve => {
 			this.#waiters.set(toolUseId, resolve);
 		});
 	}
@@ -403,9 +408,7 @@ export class ClaudeCodeCliSession implements ProviderSessionState {
 		if (typeof rawContent === "string") {
 			content = rawContent;
 		} else if (Array.isArray(rawContent)) {
-			content = rawContent
-				.map((b) => (typeof b === "string" ? b : b.text ?? JSON.stringify(b)))
-				.join("\n");
+			content = rawContent.map(b => (typeof b === "string" ? b : (b.text ?? JSON.stringify(b)))).join("\n");
 		} else {
 			content = JSON.stringify(rawContent);
 		}
@@ -442,7 +445,7 @@ function extractUserPrompt(messages: Context["messages"]): string | undefined {
 			if (Array.isArray(msg.content)) {
 				return msg.content
 					.filter((b): b is TextContent => b.type === "text")
-					.map((b) => b.text)
+					.map(b => b.text)
 					.join("\n");
 			}
 		}
@@ -487,7 +490,7 @@ function convertCcCliAssistantMessage(ccMsg: CcCliAssistantMessage, model: Model
 		}
 	}
 
-	const hasToolCalls = content.some((b) => b.type === "toolCall");
+	const hasToolCalls = content.some(b => b.type === "toolCall");
 
 	return {
 		role: "assistant",
@@ -570,13 +573,20 @@ export function streamClaudeCodeCli(
 					throw new Error("No user message found in context. Cannot start Claude Code CLI session.");
 				}
 
+				// Resolve CC CLI model: explicit ccCliOptions.model takes priority,
+				// otherwise extract variant from model ID (e.g. "claude-code-cli/sonnet" → "sonnet")
+				let ccCliModel = options?.ccCliOptions?.model;
+				if (!ccCliModel && model.id.includes("/")) {
+					ccCliModel = model.id.split("/").pop();
+				}
+
 				session = new ClaudeCodeCliSession(prompt, {
-					model: options?.ccCliOptions?.model,
+					model: ccCliModel,
 					maxTurns: options?.ccCliOptions?.maxTurns,
 					cwd: options?.ccCliOptions?.cwd,
 					extraArgs: options?.ccCliOptions?.extraArgs,
 					binaryPath: options?.ccCliOptions?.binaryPath,
-					allowPermissions: options?.ccCliOptions?.allowPermissions,
+					allowPermissions: options?.ccCliOptions?.allowPermissions ?? true,
 				});
 				sessionState.set(CC_SESSION_KEY, session);
 			}
@@ -698,7 +708,7 @@ export function createClaudeCodeCliTools(options: ClaudeCodeCliVirtualToolOption
 		return providerSessionState.get(CC_SESSION_KEY) as ClaudeCodeCliSession | undefined;
 	};
 
-	return CC_CLI_TOOL_NAMES.map((toolName) => ({
+	return CC_CLI_TOOL_NAMES.map(toolName => ({
 		name: toolName,
 		label: `CC: ${toolName}`,
 		description: `Claude Code CLI tool: ${toolName}. Executed internally by CC CLI subprocess.`,
@@ -709,11 +719,7 @@ export function createClaudeCodeCliTools(options: ClaudeCodeCliVirtualToolOption
 		},
 		lenientArgValidation: true,
 		concurrency: "shared" as const,
-		execute: async (
-			toolCallId: string,
-			_params: Record<string, unknown>,
-			_signal?: AbortSignal,
-		) => {
+		execute: async (toolCallId: string, _params: Record<string, unknown>, _signal?: AbortSignal) => {
 			const session = getSession();
 			if (!session) {
 				return {
@@ -757,11 +763,7 @@ export interface ClaudeCodeCliProviderOptions {
 
 export interface ClaudeCodeCliProvider {
 	/** Custom StreamFn for the Agent constructor. */
-	streamFn: (
-		model: Model,
-		context: Context,
-		options?: SimpleStreamOptions,
-	) => AssistantMessageEventStream;
+	streamFn: (model: Model, context: Context, options?: SimpleStreamOptions) => AssistantMessageEventStream;
 	/** Virtual tools that bridge OMPI tool execution to CC CLI. */
 	tools: ReturnType<typeof createClaudeCodeCliTools>;
 	/** Model definition for CC CLI. */

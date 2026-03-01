@@ -24,6 +24,7 @@ import {
 } from "@oh-my-pi/pi-ai";
 import { logger } from "@oh-my-pi/pi-utils";
 import { type Static, Type } from "@sinclair/typebox";
+import { discoverClaudeCodeCliModels } from "../cc-cli";
 import { type ConfigError, ConfigFile } from "../config";
 import type { ThemeColor } from "../modes/theme/theme";
 import type { AuthStorage, OAuthCredential } from "../session/auth-storage";
@@ -531,7 +532,14 @@ export class ModelRegistry {
 
 		this.#addImplicitDiscoverableProviders(configuredProviders);
 		const builtInModels = this.#loadBuiltInModels(overrides, modelOverrides);
-		const combined = this.#mergeCustomModels(builtInModels, customModels);
+
+		// Discover CC CLI models (adds them if `claude` binary is available)
+		const ccCliModels = discoverClaudeCodeCliModels();
+		if (ccCliModels.length > 0) {
+			this.#keylessProviders.add("claude-code");
+		}
+
+		const combined = this.#mergeCustomModels([...builtInModels, ...ccCliModels], customModels);
 
 		// Update github-copilot base URL based on OAuth credentials
 		const copilotCred = this.authStorage.getOAuthCredential("github-copilot");
