@@ -25,6 +25,7 @@ const BUILTIN_APIS = new Set<KnownApi>([
 	"google-gemini-cli",
 	"google-vertex",
 	"cursor-agent",
+	"claude-code-cli",
 ]);
 
 export type CustomStreamFn = (

@@ -20,6 +20,7 @@ import { isKimiModel, streamKimi } from "./providers/kimi";
 import { streamOpenAICodexResponses } from "./providers/openai-codex-responses";
 import { type OpenAICompletionsOptions, streamOpenAICompletions } from "./providers/openai-completions";
 import { streamOpenAIResponses } from "./providers/openai-responses";
+import { type ClaudeCodeCliStreamOptions, streamClaudeCodeCli } from "./providers/claude-code-cli";
 import { isSyntheticModel, streamSynthetic } from "./providers/synthetic";
 import type {
 	Api,
@@ -123,6 +124,16 @@ const serviceProviderMap: Record<string, KeyResolver> = {
 	venice: "VENICE_API_KEY",
 	vllm: "VLLM_API_KEY",
 	xiaomi: "XIAOMI_API_KEY",
+	// Claude Code CLI manages its own auth via the `claude` binary.
+	// Enabled when CLAUDE_CODE_ENABLED=1 or ~/.claude directory exists.
+	"claude-code": () => {
+		if ($env.CLAUDE_CODE_ENABLED) return "<cc-cli>";
+		try {
+			const homeDir = os.homedir();
+			if (fs.existsSync(path.join(homeDir, ".claude"))) return "<cc-cli>";
+		} catch {}
+		return undefined;
+	},
 };
 
 /**
@@ -167,6 +178,11 @@ export function stream<TApi extends Api>(
 	} else if (model.api === "bedrock-converse-stream") {
 		// Bedrock doesn't have any API keys instead it sources credentials from standard AWS env variables or from given AWS profile.
 		return streamBedrock(model as Model<"bedrock-converse-stream">, context, (options || {}) as BedrockOptions);
+	}
+
+	// Claude Code CLI — no API key needed (CC CLI manages its own auth)
+	if (model.api === "claude-code-cli") {
+		return streamClaudeCodeCli(model, context, options as ClaudeCodeCliStreamOptions);
 	}
 
 	const apiKey = options?.apiKey || getEnvApiKey(model.provider);
@@ -228,6 +244,13 @@ export function streamSimple<TApi extends Api>(
 	const customApiProvider = getCustomApi(model.api);
 	if (customApiProvider) {
 		return customApiProvider.streamSimple(model, context, options);
+	}
+
+	// Claude Code CLI — route directly, no API key needed
+	if (model.api === "claude-code-cli") {
+		return streamClaudeCodeCli(model, context, {
+			...options,
+		} as ClaudeCodeCliStreamOptions);
 	}
 
 	// Vertex AI uses Application Default Credentials, not API keys
@@ -679,6 +702,10 @@ function mapOptionsForApi<TApi extends Api>(
 				onToolResult,
 			} as OptionsForApi<TApi>;
 		}
+
+		case "claude-code-cli":
+			// CC CLI handles everything internally; pass options through.
+			return base as OptionsForApi<TApi>;
 
 		default:
 			throw new Error(`Unhandled API in mapOptionsForApi: ${model.api}`);
