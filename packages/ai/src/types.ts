@@ -26,6 +26,7 @@ import type { GoogleVertexOptions } from "./providers/google-vertex";
 import type { OpenAICodexResponsesOptions } from "./providers/openai-codex-responses";
 import type { OpenAICompletionsOptions } from "./providers/openai-completions";
 import type { OpenAIResponsesOptions } from "./providers/openai-responses";
+import type { ClaudeCodeCliStreamOptions } from "./providers/claude-code-cli";
 import type { AssistantMessageEventStream } from "./utils/event-stream";
 
 export type { AssistantMessageEventStream } from "./utils/event-stream";
@@ -40,7 +41,8 @@ export type KnownApi =
 	| "google-generative-ai"
 	| "google-gemini-cli"
 	| "google-vertex"
-	| "cursor-agent";
+	| "cursor-agent"
+	| "claude-code-cli";
 export type Api = KnownApi | (string & {});
 export interface ApiOptionsMap {
 	"anthropic-messages": AnthropicOptions;
@@ -53,6 +55,7 @@ export interface ApiOptionsMap {
 	"google-gemini-cli": GoogleGeminiCliOptions;
 	"google-vertex": GoogleVertexOptions;
 	"cursor-agent": CursorOptions;
+	"claude-code-cli": ClaudeCodeCliStreamOptions;
 }
 // Compile-time exhaustiveness check - this will fail if ApiOptionsMap doesn't have all KnownApi keys
 type _CheckExhaustive =
@@ -104,7 +107,8 @@ export type KnownProvider =
 	| "together"
 	| "venice"
 	| "vllm"
-	| "xiaomi";
+	| "xiaomi"
+	| "claude-code";
 export type Provider = KnownProvider | string;
 
 export type ThinkingLevel = "minimal" | "low" | "medium" | "high" | "xhigh";

@@ -24,6 +24,7 @@ import {
 import { Settings, type SkillsSettings } from "./config/settings";
 import { CursorExecHandlers } from "./cursor";
 import "./discovery";
+import { createCcCliVirtualTools, isCcCliModel } from "./cc-cli";
 import { resolveConfigValue } from "./config/resolve-config-value";
 import { initializeWithSettings } from "./discovery";
 import { TtsrManager } from "./export/ttsr";
@@ -1107,6 +1108,21 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 	}
 	if (model?.provider === "cursor") {
 		toolRegistry.delete("edit");
+	}
+
+	// CC CLI integration: replace built-in tools with virtual tools that proxy to CC CLI session.
+	// CC CLI runs tools internally; virtual tools read pre-computed results from the session.
+	// Uses a lazy getter since AgentSession (which owns providerSessionState) is created later.
+	if (isCcCliModel(model)) {
+		const virtualTools = createCcCliVirtualTools(() => session.providerSessionState);
+		// Clear existing tools and register virtual tools
+		toolRegistry.clear();
+		for (const tool of virtualTools) {
+			toolRegistry.set(tool.name, tool);
+		}
+		logger.debug("CC CLI mode: registered virtual tools", {
+			tools: virtualTools.map(t => t.name),
+		});
 	}
 
 	let cursorEventEmitter: ((event: AgentEvent) => void) | undefined;
